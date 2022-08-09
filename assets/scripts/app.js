@@ -1,9 +1,23 @@
+class DOMHelper { 
+  static moveElement(elementId, newDestinationSelector) {
+    const element = document.getElementById(elementId);
+    const destinationElement = document.querySelector(newDestinationSelector)
+    destinationElement.append(element);
+  }
+
+  static clearEventListeners(element) {
+    const clonedElement = element.cloneNode(true);
+    element.replaceWith(clonedElement);
+    return clonedElement;
+  }
+}
+
 class Tooltip { }
 
 class ProjectItem {
   constructor(id, updateProjectListFunc) {
     this.id = id;
-    this.updateProjectListFunc = updateProjectListFunc;
+    this.updateProjectListsHandler = updateProjectListFunc;
     this.moreInfobtnFunc();
     this.switchBtnFunc();
   }
@@ -12,10 +26,17 @@ class ProjectItem {
 
   }
   
-  switchBtnFunc() {
+  switchBtnFunc(type) {
     const projectItemEl = document.getElementById(this.id);
-    const switchBtn = projectItemEl.querySelector("button:last-of-type");
-    switchBtn.addEventListener("click", this.updateProjectListFunc);
+    let switchBtn = projectItemEl.querySelector("button:last-of-type");
+    switchBtn = DOMHelper.clearEventListeners(switchBtn)
+    switchBtn.textContent = type === 'active' ? 'Finish' : 'Activate';
+    switchBtn.addEventListener("click", this.updateProjectListsHandler.bind(null, this.id));
+  }
+
+  update(updateProjectListsFn, type) {
+    this.updateProjectListsHandler = updateProjectListsFn;
+    this.switchBtnFunc(type);
   }
 
 }
@@ -35,17 +56,21 @@ class ProjectList {
 
   // we have to call it after the construter created the projects objects
   setSwitchHaandlerFunc(switchHaandlerFunc) {
-    this.switchHaandlerFunc = switchHaandlerFunc;
+    this.switchHaandler = switchHaandlerFunc;
   }
 
-  addProjectToSection() {
-    console.log(this)
+  addProjectToSection(project) {
+    console.log(project)
+    this.projects.push(project)
+    DOMHelper.moveElement(project.id, `#${this.type}-projects ul`);
+    project.update(this.switchProject.bind(this), this.type);
+
   }
 
   switchProject(projectId) {
     // const projectIndex = this.projects.findIndex(p => p.id === projectId)
     // this.projects.splice(projectIndex, 1)
-    this.switchHaandlerFunc(this.projects.find(p => p.id === projectId))
+    this.switchHaandler(this.projects.find(p => p.id === projectId))
     this.projects = this.projects.filter(p => p.id !== projectId)
   }
 }
