@@ -1,7 +1,7 @@
-class DOMHelper { 
+class DOMHelper {
   static moveElement(elementId, newDestinationSelector) {
     const element = document.getElementById(elementId);
-    const destinationElement = document.querySelector(newDestinationSelector)
+    const destinationElement = document.querySelector(newDestinationSelector);
     destinationElement.append(element);
   }
 
@@ -12,9 +12,36 @@ class DOMHelper {
   }
 }
 
-class Tooltip { }
+class Tooltip {
+  // usuing an arrow function means the function is created every time when new instance is created, but the "this" always reffers to the current class so there is no need to add bind with "this" in the "show" method.
+
+  constructor(closeNotifierFunc) {
+    this.closeNotifier = closeNotifierFunc;
+   }
+  
+  show() {
+    const tooltipEl = document.createElement("div");
+    tooltipEl.className = "card";
+    tooltipEl.textContent = "test";
+    tooltipEl.addEventListener("click", this.closeTooltip);
+    // tooltipEl.addEventListener("click", this.removeTooltipHandler)
+    // tooltipEl.addEventListener("click", this.removeTooltipHandler.bind(this))
+    this.element = tooltipEl;
+    document.body.append(tooltipEl);
+  }
+  removeTooltipHandler() {
+    this.element.remove();
+    // this.element.parentElement.removeChild(this.element);
+  }
+  closeTooltip = () => {
+    this.removeTooltipHandler();
+    this.closeNotifier();
+  };
+}
 
 class ProjectItem {
+  hasActiveTooptip = false;
+
   constructor(id, updateProjectListFunc) {
     this.id = id;
     this.updateProjectListsHandler = updateProjectListFunc;
@@ -22,36 +49,51 @@ class ProjectItem {
     this.switchBtnFunc();
   }
 
-  moreInfobtnFunc() {
-
+  showMoreInfoHandler() {
+    if (this.hasActiveTooptip) {
+      return;
+    }
+    const tooltip = new Tooltip(() => this.hasActiveTooptip = false);
+    tooltip.show();
+    this.hasActiveTooptip = true;
   }
-  
+
+  moreInfobtnFunc() {
+    const projectItemEl = document.getElementById(this.id);
+    const moreInfoBtnEl = projectItemEl.querySelector("button:first-of-type");
+    moreInfoBtnEl.addEventListener("click", this.showMoreInfoHandler);
+  }
+
   switchBtnFunc(type) {
     const projectItemEl = document.getElementById(this.id);
     let switchBtn = projectItemEl.querySelector("button:last-of-type");
-    switchBtn = DOMHelper.clearEventListeners(switchBtn)
-    switchBtn.textContent = type === 'active' ? 'Finish' : 'Activate';
-    switchBtn.addEventListener("click", this.updateProjectListsHandler.bind(null, this.id));
+    switchBtn = DOMHelper.clearEventListeners(switchBtn);
+    switchBtn.textContent = type === "active" ? "Finish" : "Activate";
+    switchBtn.addEventListener(
+      "click",
+      this.updateProjectListsHandler.bind(null, this.id)
+    );
   }
 
   update(updateProjectListsFn, type) {
     this.updateProjectListsHandler = updateProjectListsFn;
     this.switchBtnFunc(type);
   }
-
 }
 
-class ProjectList { 
+class ProjectList {
   projects = [];
 
   constructor(type) {
     this.type = type;
 
-    const prjItems = document.querySelectorAll(`#${type}-projects li`)
+    const prjItems = document.querySelectorAll(`#${type}-projects li`);
     for (const project of prjItems) {
-      this.projects.push(new ProjectItem(project.id, this.switchProject.bind(this)))
+      this.projects.push(
+        new ProjectItem(project.id, this.switchProject.bind(this))
+      );
     }
-    console.log(this.projects)
+    console.log(this.projects);
   }
 
   // we have to call it after the construter created the projects objects
@@ -60,18 +102,17 @@ class ProjectList {
   }
 
   addProjectToSection(project) {
-    console.log(project)
-    this.projects.push(project)
+    console.log(project);
+    this.projects.push(project);
     DOMHelper.moveElement(project.id, `#${this.type}-projects ul`);
     project.update(this.switchProject.bind(this), this.type);
-
   }
 
   switchProject(projectId) {
     // const projectIndex = this.projects.findIndex(p => p.id === projectId)
     // this.projects.splice(projectIndex, 1)
-    this.switchHaandler(this.projects.find(p => p.id === projectId))
-    this.projects = this.projects.filter(p => p.id !== projectId)
+    this.switchHaandler(this.projects.find((p) => p.id === projectId));
+    this.projects = this.projects.filter((p) => p.id !== projectId);
   }
 }
 
@@ -82,8 +123,12 @@ class App {
     const finishedProjectsList = new ProjectList("finished");
 
     // changing the instance - the "this"
-    activeProjectsList.setSwitchHaandlerFunc(finishedProjectsList.addProjectToSection.bind(finishedProjectsList))
-    finishedProjectsList.setSwitchHaandlerFunc(activeProjectsList.addProjectToSection.bind(activeProjectsList))
+    activeProjectsList.setSwitchHaandlerFunc(
+      finishedProjectsList.addProjectToSection.bind(finishedProjectsList)
+    );
+    finishedProjectsList.setSwitchHaandlerFunc(
+      activeProjectsList.addProjectToSection.bind(activeProjectsList)
+    );
   }
 }
 
