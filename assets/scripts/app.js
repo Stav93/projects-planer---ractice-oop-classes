@@ -12,29 +12,64 @@ class DOMHelper {
   }
 }
 
-class Tooltip {
+class BaseClass {
+  constructor(hostElementId, insertBefore = false) {
+    if (hostElementId) {
+      this.hostElement = document.getElementById(hostElementId);
+    } else {
+      this.hostElement = document.body;
+    }
+    this.insertBefore = insertBefore;
+  }
+
+  show() {
+    this.hostElement.insertAdjacentElement(this.insertBefore ? "afterebegin" : "beforeend", this.element)
+    // document.body.append(this.element);
+  }
+  remove() {
+    if (this.element) {
+       this.element.remove();
+    }
+  }
+}
+
+class Tooltip extends BaseClass{
   // usuing an arrow function means the function is created every time when new instance is created, but the "this" always reffers to the current class so there is no need to add bind with "this" in the "show" method.
 
   constructor(closeNotifierFunc) {
+    // the defaults argument are actually "null", it's good for this situation
+    super();
+    // super("active-projects, true")
+    // super("finished-projects, true")
     this.closeNotifier = closeNotifierFunc;
-   }
-  
+    this.create();
+  }
+  /* 
   show() {
     const tooltipEl = document.createElement("div");
     tooltipEl.className = "card";
     tooltipEl.textContent = "test";
     tooltipEl.addEventListener("click", this.closeTooltip);
-    // tooltipEl.addEventListener("click", this.removeTooltipHandler)
-    // tooltipEl.addEventListener("click", this.removeTooltipHandler.bind(this))
     this.element = tooltipEl;
     document.body.append(tooltipEl);
   }
   removeTooltipHandler() {
     this.element.remove();
-    // this.element.parentElement.removeChild(this.element);
+    //this.element.parentElement.removeChild(this.element); 
   }
+  */
+  
+  create() {
+    const tooltipEl = document.createElement("div");
+    tooltipEl.className = "card";
+    tooltipEl.textContent = "test";
+    tooltipEl.addEventListener("click", this.closeTooltip);
+    this.element = tooltipEl;
+  }
+
   closeTooltip = () => {
-    this.removeTooltipHandler();
+    this.remove();
+    // this.removeTooltipHandler();
     this.closeNotifier();
   };
 }
