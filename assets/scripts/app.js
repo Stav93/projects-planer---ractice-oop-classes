@@ -36,16 +36,45 @@ class BaseClass {
 class Tooltip extends BaseClass{
   // usuing an arrow function means the function is created every time when new instance is created, but the "this" always reffers to the current class so there is no need to add bind with "this" in the "show" method.
 
-  constructor(closeNotifierFunc, tooltipText) {
+  constructor(closeNotifierFunc, tooltipText, hostElementId) {
     // the defaults argument are actually "null", it's good for this situation
-    super();
-    // super("active-projects, true")
-    // super("finished-projects, true")
+    super(hostElementId);
     this.closeNotifier = closeNotifierFunc;
     this.text = tooltipText;
     this.create();
   }
-  /* 
+
+  create() {
+    const tooltipEl = document.createElement("div");
+    tooltipEl.className = "card";
+    tooltipEl.textContent = this.text;
+    // console.log(this.hostElement.getBoundingClientRect())
+
+    const hostElementPosLeft = this.hostElement.offsetLeft;
+    const hostElementPosTop = this.hostElement.offsetTop;
+    const hostElHeight = this.hostElement.clientHeight;
+    // offsetHeight will include the borders
+    const parentElementScrolling = this.hostElement.parentElement.scrollTop
+
+    const x = hostElementPosLeft + 16;
+    const y = hostElementPosTop + hostElHeight -parentElementScrolling -10;
+    
+    tooltipEl.style.position = "absolute";
+    tooltipEl.style.left = x + "px";
+    tooltipEl.style.top = y + "px";
+
+
+    tooltipEl.addEventListener("click", this.closeTooltip);
+    this.element = tooltipEl;
+  }
+
+  closeTooltip = () => {
+    this.remove();
+    // this.removeTooltipHandler();
+    this.closeNotifier();
+  };
+
+   /* 
   show() {
     const tooltipEl = document.createElement("div");
     tooltipEl.className = "card";
@@ -59,20 +88,6 @@ class Tooltip extends BaseClass{
     //this.element.parentElement.removeChild(this.element); 
   }
   */
-  
-  create() {
-    const tooltipEl = document.createElement("div");
-    tooltipEl.className = "card";
-    tooltipEl.textContent = this.text;
-    tooltipEl.addEventListener("click", this.closeTooltip);
-    this.element = tooltipEl;
-  }
-
-  closeTooltip = () => {
-    this.remove();
-    // this.removeTooltipHandler();
-    this.closeNotifier();
-  };
 }
 
 class ProjectItem {
@@ -91,7 +106,7 @@ class ProjectItem {
     }
     const projectElement = document.getElementById(this.id)
     const tooltipText = projectElement.dataset.extraInfo;
-    const tooltip = new Tooltip(() => this.hasActiveTooptip = false, tooltipText);
+    const tooltip = new Tooltip(() => this.hasActiveTooptip = false, tooltipText, this.id);
     tooltip.show();
     this.hasActiveTooptip = true;
   }
