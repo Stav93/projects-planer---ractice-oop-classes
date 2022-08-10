@@ -3,6 +3,12 @@ class DOMHelper {
     const element = document.getElementById(elementId);
     const destinationElement = document.querySelector(newDestinationSelector);
     destinationElement.append(element);
+    // jumps to that element
+    // element.scrollIntoView();
+    // controlling the scrolling
+    // the default is "auto"
+    // safari doesnt support that feture
+    element.scrollIntoView({behavior: "smooth"});
   }
 
   static clearEventListeners(element) {
