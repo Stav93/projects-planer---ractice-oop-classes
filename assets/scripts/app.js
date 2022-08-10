@@ -36,12 +36,13 @@ class BaseClass {
 class Tooltip extends BaseClass{
   // usuing an arrow function means the function is created every time when new instance is created, but the "this" always reffers to the current class so there is no need to add bind with "this" in the "show" method.
 
-  constructor(closeNotifierFunc) {
+  constructor(closeNotifierFunc, tooltipText) {
     // the defaults argument are actually "null", it's good for this situation
     super();
     // super("active-projects, true")
     // super("finished-projects, true")
     this.closeNotifier = closeNotifierFunc;
+    this.text = tooltipText;
     this.create();
   }
   /* 
@@ -62,7 +63,7 @@ class Tooltip extends BaseClass{
   create() {
     const tooltipEl = document.createElement("div");
     tooltipEl.className = "card";
-    tooltipEl.textContent = "test";
+    tooltipEl.textContent = this.text;
     tooltipEl.addEventListener("click", this.closeTooltip);
     this.element = tooltipEl;
   }
@@ -88,15 +89,18 @@ class ProjectItem {
     if (this.hasActiveTooptip) {
       return;
     }
-    const tooltip = new Tooltip(() => this.hasActiveTooptip = false);
+    const projectElement = document.getElementById(this.id)
+    const tooltipText = projectElement.dataset.extraInfo;
+    const tooltip = new Tooltip(() => this.hasActiveTooptip = false, tooltipText);
     tooltip.show();
     this.hasActiveTooptip = true;
   }
+ 
 
   moreInfobtnFunc() {
     const projectItemEl = document.getElementById(this.id);
     const moreInfoBtnEl = projectItemEl.querySelector("button:first-of-type");
-    moreInfoBtnEl.addEventListener("click", this.showMoreInfoHandler);
+    moreInfoBtnEl.addEventListener("click", this.showMoreInfoHandler.bind(this));
   }
 
   switchBtnFunc(type) {
