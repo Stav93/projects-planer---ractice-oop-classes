@@ -183,6 +183,15 @@ class ProjectList {
         list.parentElement.classList.remove("droppable")
       }
     });
+    list.addEventListener("drop", event => {
+      const projectId = event.dataTransfer.getData("text/plain");
+      if (this.projects.find(p => p.id === projectId)) {
+        return
+      } else {
+        document.getElementById(projectId).querySelector("button:last-of-type").click();
+        list.parentElement.classList.remove("droppable");
+      }
+    })
   }
 
   // we have to call it after the construter created the projects objects
