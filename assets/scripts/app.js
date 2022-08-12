@@ -104,6 +104,14 @@ class ProjectItem {
     this.updateProjectListsHandler = updateProjectListFunc;
     this.moreInfobtnFunc();
     this.switchBtnFunc();
+    this.connectDrag();
+  }
+
+  connectDrag() {
+    document.getElementById(this.id).addEventListener("dragstart", event => {
+      event.dataTransfer.setData("text/plain", this.id)
+      event.dataTransfer.effectAllowed = "move";
+    });
   }
 
   showMoreInfoHandler() {
